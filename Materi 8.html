@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Teknologi: Hakikat Transformasi Digital</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Roboto+Slab:wght@400;700&display=swap');
+
+        :root {
+            --bg-parchment: #fdf6e3;
+            --text-color: #3d2c1d;
+            --header-color: #5d4037;
+            --accent-color: #a1887f;
+            --correct-color: #27ae60;
+            --incorrect-color: #c0392b;
+            --wood-texture-url: 'https://www.transparenttextures.com/patterns/wood-pattern.png';
+            --desk-color: #6d4c41;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Merriweather', serif;
+        }
+        
+        #study-background {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1511920170033-f83297292737?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1887&q=80');
+            background-size: cover;
+            background-position: center;
+            filter: blur(5px) brightness(0.7);
+            transform: scale(1.1);
+        }
+
+        #desk {
+            position: fixed;
+            bottom: 0; left: 0;
+            width: 100%;
+            height: 30vh;
+            background-color: var(--desk-color);
+            background-image: url(var(--wood-texture-url));
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+            transform: perspective(1000px) rotateX(20deg);
+            transform-origin: top center;
+        }
+
+        .desk-object {
+            position: absolute;
+            bottom: 10vh;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+        .desk-object:hover {
+            transform: translateY(-20px) scale(1.05);
+        }
+
+        /* Objek-objek di Meja */
+        #main-book-cover {
+            left: 50%;
+            transform: translateX(-50%) rotate(-5deg);
+            width: 250px; height: 350px;
+            background-color: #4a2c2a;
+            border-radius: 8px;
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: #e0dcd1; text-align: center; padding: 20px;
+        }
+        #main-book-cover h2 { font-family: 'Roboto Slab', serif; margin: 0; font-size: 24px; line-height: 1.3; }
+        #main-book-cover p { font-size: 14px; margin-top: 10px; color: #c5b8a5; }
+
+        #quiz-object {
+            right: 25%;
+            transform: rotate(10deg);
+            width: 200px; height: 280px;
+            background-color: #faf3e0;
+            border-radius: 5px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            padding: 20px; text-align: center; color: #5d4037;
+        }
+         #quiz-object h3 { font-family: 'Roboto Slab', serif; margin: 0; border-bottom: 2px solid var(--accent-color); padding-bottom: 5px;}
+         #quiz-object p { font-size: 14px; margin-top: 10px; font-style: italic; }
+
+        #glossary-object {
+            left: 25%;
+            transform: rotate(-8deg);
+            width: 180px; height: 130px;
+            background: #607d8b; color: white;
+            border-radius: 5px; box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            padding: 15px; text-align: center;
+        }
+        #glossary-object h3 { font-family: 'Roboto Slab'; margin:0; font-size: 18px; color: white; }
+
+        /* Modal Generik */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+            z-index: 1000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s;
+        }
+        .modal.visible { opacity: 1; pointer-events: all; }
+        .modal-paper {
+            width: 80vw; max-width: 900px; height: 85vh;
+            background-color: var(--bg-parchment);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); border-radius: 5px;
+            padding: 70px; box-sizing: border-box; color: var(--text-color);
+            position: relative; transform: scale(0.8); transition: transform 0.5s;
+        }
+        .modal.visible .modal-paper { transform: scale(1); }
+        .modal-close-btn {
+            position: absolute; top: 20px; right: 20px; font-size: 30px;
+            cursor: pointer; color: var(--accent-color); z-index: 10;
+        }
+
+        /* Styling Buku Utama */
+        #page-content { 
+            height: calc(100% - 40px); overflow-y: auto; 
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        #page-content.fade-out-left { opacity: 0; transform: translateX(-30px); }
+        #page-content.fade-out-right { opacity: 0; transform: translateX(30px); }
+        #page-content h2 { color: var(--header-color); font-family: 'Roboto Slab'; border-bottom: 1px solid var(--accent-color); padding-bottom: 10px; margin-top:0; }
+        #page-content p, #page-content li { font-size: 19px; line-height: 1.8; margin-bottom: 1em; }
+        #page-content ul, #page-content ol { padding-left: 30px; }
+        .drop-cap::first-letter {
+            font-family: 'Roboto Slab', serif;
+            color: var(--header-color);
+            font-size: 4em; float: left;
+            line-height: 0.8; margin-right: 8px; margin-top: 8px;
+        }
+        
+        .book-nav {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 50px; height: 50px; background: rgba(0,0,0,0.1);
+            border-radius: 50%; cursor: pointer; display: flex;
+            justify-content: center; align-items: center; font-size: 30px;
+            color: var(--text-color); transition: all 0.2s; z-index: 10;
+        }
+        .book-nav:hover { background: rgba(0,0,0,0.2); }
+        .book-nav.disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+        #prev-page { left: -80px; }
+        #next-page { right: -80px; }
+        #page-indicator {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            font-size: 16px; color: var(--accent-color);
+        }
+
+        /* Styling Kuis */
+        #quiz-container { text-align: center; }
+        #quiz-question-area { display: block; }
+        #quiz-progress { font-size: 16px; color: var(--accent-color); margin-bottom: 15px;}
+        #quiz-question { font-size: 1.5em; margin-bottom: 30px; }
+        #quiz-options { list-style: none; padding: 0; margin: 0; }
+        #quiz-options li {
+            background: rgba(0,0,0,0.05); border: 2px solid var(--accent-color);
+            padding: 15px; margin-bottom: 15px; border-radius: 10px;
+            cursor: pointer; transition: all 0.2s; font-size: 18px;
+        }
+        #quiz-options li:hover { background: rgba(0,0,0,0.1); }
+        #quiz-options.answered li { pointer-events: none; }
+        #quiz-options li.correct { background-color: var(--correct-color); border-color: var(--correct-color); color: white; }
+        #quiz-options li.incorrect { background-color: var(--incorrect-color); border-color: var(--incorrect-color); color: white; }
+        #score-screen { display: none; text-align: center; }
+        #score-screen h2 { font-size: 3em; }
+        #score-text { font-size: 1.5em; }
+        #retry-quiz-btn {
+            margin-top: 30px; padding: 15px 30px; font-size: 18px;
+            background: var(--header-color); color: white;
+            border: none; border-radius: 10px; cursor: pointer;
+        }
+
+        /* Styling Glosarium */
+        #glossary-content { height: 100%; overflow-y: auto; }
+        #glossary-content dl dt { font-family: 'Roboto Slab'; font-size: 1.2em; color: var(--header-color); margin-top: 1.5em; }
+        #glossary-content dl dd { margin-left: 0; padding-left: 1.5em; border-left: 3px solid var(--accent-color); }
+    </style>
+</head>
+<body>
+
+    <div id="study-background"></div>
+    <div id="desk"></div>
+    
+    <div id="glossary-object" class="desk-object">
+        <h3>Glosarium</h3>
+    </div>
+    <div id="main-book-cover" class="desk-object">
+        <h2>Mendefinisikan Ulang Bisnis: Hakikat Transformasi Digital</h2>
+        <p>Klik untuk Membaca</p>
+    </div>
+    <div id="quiz-object" class="desk-object">
+        <h3>KUIS</h3>
+        <p>Uji Pemahaman Anda</p>
+    </div>
+
+    <!-- Modal Buku Utama -->
+    <div id="book-modal" class="modal">
+        <div id="book-paper" class="modal-paper">
+            <span id="close-book-btn" class="modal-close-btn">&times;</span>
+            <div id="page-content"></div>
+            <div id="prev-page" class="book-nav">‹</div>
+            <div id="next-page" class="book-nav">›</div>
+            <div id="page-indicator"></div>
+        </div>
+    </div>
+
+    <!-- Modal Kuis -->
+    <div id="quiz-modal" class="modal">
+        <div id="quiz-paper" class="modal-paper">
+            <span id="close-quiz-btn" class="modal-close-btn">&times;</span>
+            <div id="quiz-container">
+                <div id="quiz-question-area">
+                    <p id="quiz-progress"></p>
+                    <h2 id="quiz-question"></h2>
+                    <ul id="quiz-options"></ul>
+                </div>
+                <div id="score-screen">
+                    <h2>Kuis Selesai!</h2>
+                    <p id="score-text"></p>
+                    <button id="retry-quiz-btn">Coba Lagi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Glosarium -->
+    <div id="glossary-modal" class="modal">
+        <div id="glossary-paper" class="modal-paper">
+            <span id="close-glossary-btn" class="modal-close-btn">&times;</span>
+            <div id="glossary-content">
+                <h2>Glosarium Istilah</h2>
+                <dl>
+                    <dt>Transformasi Digital (TD)</dt>
+                    <dd>Penggunaan strategis teknologi digital untuk mengubah cara organisasi beroperasi, memberikan nilai, dan mendefinisikan ulang model bisnisnya secara fundamental.</dd>
+                    <dt>Digitalisasi</dt>
+                    <dd>Langkah teknis untuk mengkonversi informasi dari format analog (misalnya, kertas) ke format digital. Merupakan bagian dari, tetapi bukan keseluruhan, transformasi digital.</dd>
+                    <dt>Enabler</dt>
+                    <dd>Sesuatu yang memungkinkan atau memfasilitasi terjadinya suatu proses atau perubahan. Dalam konteks ini, teknologi adalah enabler utama dari TD.</dd>
+                    <dt>Omnichannel</dt>
+                    <dd>Pendekatan yang menciptakan pengalaman pelanggan yang terintegrasi dan mulus di berbagai kanal interaksi (online, toko fisik, aplikasi, dll.).</dd>
+                    <dt>Business Process Re-engineering</dt>
+                    <dd>Pemikiran ulang yang radikal dan perancangan ulang proses bisnis untuk mencapai perbaikan dramatis dalam kinerja, seperti biaya, kualitas, layanan, dan kecepatan.</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ==========================================
+    // DATA KONTEN
+    // ==========================================
+    const bookPages = [
+        `<h2>Digitalisasi vs. Transformasi</h2>
+         <p class="drop-cap">Dalam leksikon bisnis kontemporer, "Transformasi Digital" (TD) telah menjadi sebuah paradigma yang dominan. Namun, pemahaman yang presisi menuntut adanya distingsi yang jelas antara transformasi dan sekadar digitalisasi.</p>
+         <p>Digitalisasi, seperti konversi dokumen fisik ke format digital, merupakan langkah teknis. Sebaliknya, transformasi digital adalah perubahan yang jauh lebih fundamental dan holistik.</p>`,
+        `<h2>Esensi Transformasi Digital</h2>
+         <p>Secara esensial, transformasi digital adalah penggunaan strategis teknologi digital untuk secara fundamental mengubah cara sebuah organisasi beroperasi, memberikan nilai kepada pelanggannya, dan bahkan mendefinisikan ulang model bisnisnya.</p>
+         <p>Ini melibatkan integrasi mendalam teknologi digital ke dalam seluruh area fungsional, yang pada gilirannya memicu perubahan mendasar dalam proses kerja, budaya organisasi, dan arsitektur pengalaman pelanggan. Fokus utamanya bukan pada adopsi teknologi itu sendiri, melainkan pada penciptaan nilai baru dan peningkatan daya saing yang berkelanjutan.</p>`,
+        `<h2>Bukan Sekadar Domain Teknologi</h2>
+         <p>Penting untuk ditekankan bahwa transformasi digital bukanlah domain eksklusif teknologi. Meskipun teknologi berfungsi sebagai enabler utama, TD pada hakikatnya adalah sebuah inisiatif strategi bisnis.</p>
+         <p>Keberhasilannya sangat bergantung pada variabel-variabel non-teknis seperti visi kepemimpinan yang jelas, budaya organisasi yang adaptif, dan kesiapan kapabilitas sumber daya manusia. Tanpa fondasi ini, investasi teknologi secanggih apapun berisiko gagal menghasilkan transformasi yang substantif.</p>`,
+        `<h2>Tujuan Strategis TD</h2>
+         <p>Organisasi mengejar transformasi digital untuk mencapai serangkaian tujuan strategis. Tujuan-tujuan ini umumnya mencakup:</p>
+         <ul>
+            <li>Peningkatan efisiensi operasional melalui otomatisasi cerdas.</li>
+            <li>Redefinisi pengalaman pelanggan melalui personalisasi dan interaksi omnichannel.</li>
+            <li>Penciptaan aliran pendapatan baru melalui produk dan layanan digital.</li>
+            <li>Penguatan kapabilitas pengambilan keputusan melalui analisis data prediktif.</li>
+         </ul>`,
+        `<h2>Pilar Teknologi Fondasi</h2>
+         <p>Terdapat beberapa pilar teknologi yang menjadi fondasi bagi sebagian besar inisiatif transformasi digital.</p>
+         <ul>
+            <li><strong>Cloud Computing:</strong> Menyediakan infrastruktur yang fleksibel dan skalabel.</li>
+            <li><strong>Big Data Analytics:</strong> Memungkinkan ekstraksi wawasan dari himpunan data yang kompleks.</li>
+            <li><strong>Kecerdasan Buatan (AI) dan Machine Learning:</strong> Mendorong otomatisasi cerdas dan personalisasi.</li>
+            <li><strong>Internet of Things (IoT):</strong> Menjembatani dunia fisik dan digital.</li>
+            <li><strong>Platform Mobile dan Media Sosial:</strong> Menjadi kanal utama untuk interaksi pasar.</li>
+         </ul>`,
+        `<h2>Perancangan Ulang Proses Bisnis</h2>
+         <p>Salah satu aspek paling fundamental dari TD adalah perancangan ulang proses bisnis (business process re-engineering). Organisasi tidak dapat mengharapkan hasil transformatif dengan hanya "menempelkan" teknologi baru di atas proses lama yang tidak efisien.</p>
+         <p>Sebaliknya, TD menuntut pemikiran ulang yang radikal terhadap alur kerja, eliminasi silo-silo departemen, dan penciptaan proses yang lebih terintegrasi dan berorientasi pada pelanggan.</p>`,
+        `<h2>Pentingnya Evolusi Budaya</h2>
+         <p>Keberhasilan TD juga sangat bergantung pada evolusi budaya organisasi. Budaya yang kaku, birokratis, dan resisten terhadap perubahan merupakan penghambat utama.</p>
+         <p>Sebaliknya, budaya yang mendorong eksperimen, menghargai pembelajaran dari kegagalan, memfasilitasi kolaborasi lintas fungsi, dan memberdayakan karyawan akan menjadi akselerator transformasi. Kepemimpinan memegang peran sentral dalam membentuk dan memelihara budaya yang kondusif ini.</p>`,
+        `<h2>Sebuah Perjalanan Berkelanjutan</h2>
+         <p>Pada akhirnya, transformasi digital adalah sebuah perjalanan berkelanjutan, bukan proyek dengan titik akhir yang pasti. Lanskap teknologi, ekspektasi pelanggan, dan dinamika persaingan akan terus berevolusi.</p>
+         <p>Oleh karena itu, organisasi harus memandang TD sebagai sebuah kapabilitas adaptasi dan inovasi yang konstan, yang memerlukan evaluasi, pembelajaran, dan penyesuaian secara terus-menerus. Ia relevan untuk semua skala bisnis, termasuk UMKM, yang kini dapat memanfaatkan teknologi terjangkau untuk berkompetisi dan bertumbuh.</p>`,
+        `<h2>Konklusi</h2>
+         <p>Sebagai kesimpulan, transformasi digital telah menjadi sebuah keharusan strategis. Ia merupakan proses holistik yang melampaui adopsi teknologi, menyentuh inti dari cara bisnis dijalankan dan nilai diciptakan.</p>
+         <p>Manajemen Teknologi yang efektif memegang peranan krusial sebagai pemandu dan orkestrator dalam perjalanan transformasi yang kompleks namun vital ini.</p>`
+    ];
+
+    const quizData = [
+        { question: "Apa perbedaan utama antara Digitalisasi dan Transformasi Digital (TD)?", options: ["Digitalisasi lebih mahal", "TD adalah perubahan fundamental, digitalisasi adalah langkah teknis", "Digitalisasi hanya untuk dokumen", "TD hanya menggunakan cloud"], answer: 1 },
+        { question: "Selain teknologi, variabel apa yang SANGAT menentukan keberhasilan TD?", options: ["Jumlah kompetitor", "Ukuran perusahaan", "Visi kepemimpinan dan budaya organisasi", "Anggaran pemasaran"], answer: 2 },
+        { question: "Menempelkan teknologi baru di atas proses lama yang tidak efisien adalah pendekatan yang...", options: ["Paling efektif", "Direkomendasikan", "Tidak akan menghasilkan transformasi", "Paling hemat biaya"], answer: 2 },
+        { question: "Manakah yang BUKAN merupakan pilar teknologi utama untuk TD?", options: ["Cloud Computing", "Kecerdasan Buatan (AI)", "Komputer Mainframe", "Internet of Things (IoT)"], answer: 2 },
+        { question: "Bagaimana seharusnya organisasi memandang Transformasi Digital?", options: ["Sebagai proyek dengan akhir yang pasti", "Sebagai tugas departemen IT", "Sebagai perjalanan berkelanjutan", "Sebagai tren sesaat"], answer: 2 }
+    ];
+
+    // Kode JavaScript Engine & Logic
+    const bookCover = document.getElementById('main-book-cover');
+    const quizObject = document.getElementById('quiz-object');
+    const glossaryObject = document.getElementById('glossary-object');
+    const bookModal = document.getElementById('book-modal');
+    const quizModal = document.getElementById('quiz-modal');
+    const glossaryModal = document.getElementById('glossary-modal');
+    const closeBookBtn = document.getElementById('close-book-btn');
+    const closeQuizBtn = document.getElementById('close-quiz-btn');
+    const closeGlossaryBtn = document.getElementById('close-glossary-btn');
+    const pageContent = document.getElementById('page-content');
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    const pageIndicator = document.getElementById('page-indicator');
+    const quizQuestionArea = document.getElementById('quiz-question-area');
+    const quizProgress = document.getElementById('quiz-progress');
+    const quizQuestionEl = document.getElementById('quiz-question');
+    const quizOptionsEl = document.getElementById('quiz-options');
+    const scoreScreen = document.getElementById('score-screen');
+    const scoreText = document.getElementById('score-text');
+    const retryQuizBtn = document.getElementById('retry-quiz-btn');
+
+    let currentPageIndex = 0;
+    let isPageAnimating = false;
+    let currentQuizIndex = 0;
+    let score = 0;
+
+    function showPage(index, direction) {
+        if (index < 0 || index >= bookPages.length || isPageAnimating) return;
+        isPageAnimating = true;
+        const fadeOutClass = (direction === 'next') ? 'fade-out-left' : 'fade-out-right';
+        pageContent.classList.add(fadeOutClass);
+        setTimeout(() => {
+            currentPageIndex = index;
+            pageContent.innerHTML = bookPages[currentPageIndex];
+            pageIndicator.textContent = `Halaman ${currentPageIndex + 1} dari ${bookPages.length}`;
+            pageContent.scrollTop = 0;
+            prevPageBtn.classList.toggle('disabled', currentPageIndex === 0);
+            nextPageBtn.classList.toggle('disabled', currentPageIndex === bookPages.length - 1);
+            pageContent.classList.remove('fade-out-left', 'fade-out-right');
+            isPageAnimating = false;
+        }, 300);
+    }
+    function openBook() {
+        bookModal.classList.add('visible');
+        currentPageIndex = -1;
+        showPage(0, 'next');
+    }
+    function closeBook() { bookModal.classList.remove('visible'); }
+
+    function startQuiz() {
+        currentQuizIndex = 0;
+        score = 0;
+        quizModal.classList.add('visible');
+        scoreScreen.style.display = 'none';
+        quizQuestionArea.style.display = 'block';
+        showQuizQuestion();
+    }
+    function showQuizQuestion() {
+        const questionData = quizData[currentQuizIndex];
+        quizProgress.textContent = `Soal ${currentQuizIndex + 1} dari ${quizData.length}`;
+        quizQuestionEl.textContent = questionData.question;
+        quizOptionsEl.innerHTML = '';
+        quizOptionsEl.classList.remove('answered');
+        questionData.options.forEach((option, index) => {
+            const li = document.createElement('li');
+            li.textContent = option;
+            li.dataset.index = index;
+            quizOptionsEl.appendChild(li);
+        });
+    }
+    function handleAnswer(e) {
+        if (e.target.tagName !== 'LI' || quizOptionsEl.classList.contains('answered')) return;
+        quizOptionsEl.classList.add('answered');
+        const selectedIndex = parseInt(e.target.dataset.index);
+        const correctIndex = quizData[currentQuizIndex].answer;
+        if (selectedIndex === correctIndex) {
+            score++;
+            e.target.classList.add('correct');
+        } else {
+            e.target.classList.add('incorrect');
+            quizOptionsEl.children[correctIndex].classList.add('correct');
+        }
+        setTimeout(() => {
+            currentQuizIndex++;
+            if (currentQuizIndex < quizData.length) {
+                showQuizQuestion();
+            } else {
+                showFinalScore();
+            }
+        }, 1500);
+    }
+    function showFinalScore() {
+        quizQuestionArea.style.display = 'none';
+        scoreScreen.style.display = 'block';
+        scoreText.innerHTML = `Anda menjawab benar <strong>${score}</strong> dari <strong>${quizData.length}</strong> soal.`;
+    }
+    function closeQuiz() { quizModal.classList.remove('visible'); }
+
+    function openGlossary() { glossaryModal.classList.add('visible'); }
+    function closeGlossary() { glossaryModal.classList.remove('visible'); }
+
+    bookCover.addEventListener('click', openBook);
+    closeBookBtn.addEventListener('click', closeBook);
+    prevPageBtn.addEventListener('click', () => showPage(currentPageIndex - 1, 'prev'));
+    nextPageBtn.addEventListener('click', () => showPage(currentPageIndex + 1, 'next'));
+    quizObject.addEventListener('click', startQuiz);
+    closeQuizBtn.addEventListener('click', closeQuiz);
+    quizOptionsEl.addEventListener('click', handleAnswer);
+    retryQuizBtn.addEventListener('click', startQuiz);
+    glossaryObject.addEventListener('click', openGlossary);
+    closeGlossaryBtn.addEventListener('click', closeGlossary);
+    
+    window.addEventListener('keydown', (e) => {
+        const anyModalVisible = bookModal.classList.contains('visible') || quizModal.classList.contains('visible') || glossaryModal.classList.contains('visible');
+        if (e.key === 'Escape' && anyModalVisible) {
+            closeBook();
+            closeQuiz();
+            closeGlossary();
+        }
+        if (bookModal.classList.contains('visible')) {
+            if (e.key === 'ArrowRight') nextPageBtn.click();
+            if (e.key === 'ArrowLeft') prevPageBtn.click();
+        }
+    });
+
+});
+</script>
+</body>
+</html>

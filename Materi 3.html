@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Teknologi: Imperatif di Era Kontemporer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Roboto+Slab:wght@400;700&display=swap');
+
+        :root {
+            --bg-parchment: #fdf6e3;
+            --text-color: #3d2c1d;
+            --header-color: #5d4037;
+            --accent-color: #a1887f;
+            --correct-color: #27ae60;
+            --incorrect-color: #c0392b;
+            --wood-texture-url: 'https://www.transparenttextures.com/patterns/wood-pattern.png';
+            --desk-color: #6d4c41;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Merriweather', serif;
+        }
+        
+        #study-background {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1511920170033-f83297292737?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1887&q=80');
+            background-size: cover;
+            background-position: center;
+            filter: blur(5px) brightness(0.7);
+            transform: scale(1.1);
+        }
+
+        #desk {
+            position: fixed;
+            bottom: 0; left: 0;
+            width: 100%;
+            height: 30vh;
+            background-color: var(--desk-color);
+            background-image: url(var(--wood-texture-url));
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+            transform: perspective(1000px) rotateX(20deg);
+            transform-origin: top center;
+        }
+
+        .desk-object {
+            position: absolute;
+            bottom: 10vh;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+        .desk-object:hover {
+            transform: translateY(-20px) scale(1.05);
+        }
+
+        /* Objek-objek di Meja */
+        #main-book-cover {
+            left: 50%;
+            transform: translateX(-50%) rotate(-5deg);
+            width: 250px; height: 350px;
+            background-color: #4a2c2a;
+            border-radius: 8px;
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: #e0dcd1; text-align: center; padding: 20px;
+        }
+        #main-book-cover h2 { font-family: 'Roboto Slab', serif; margin: 0; font-size: 24px; line-height: 1.3; }
+        #main-book-cover p { font-size: 14px; margin-top: 10px; color: #c5b8a5; }
+
+        #quiz-object {
+            right: 25%;
+            transform: rotate(10deg);
+            width: 200px; height: 280px;
+            background-color: #faf3e0;
+            border-radius: 5px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            padding: 20px; text-align: center; color: #5d4037;
+        }
+         #quiz-object h3 { font-family: 'Roboto Slab', serif; margin: 0; border-bottom: 2px solid var(--accent-color); padding-bottom: 5px;}
+         #quiz-object p { font-size: 14px; margin-top: 10px; font-style: italic; }
+
+        #glossary-object {
+            left: 25%;
+            transform: rotate(-8deg);
+            width: 180px; height: 130px;
+            background: #607d8b; color: white;
+            border-radius: 5px; box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            padding: 15px; text-align: center;
+        }
+        #glossary-object h3 { font-family: 'Roboto Slab'; margin:0; font-size: 18px; color: white; }
+
+        /* Modal Generik */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+            z-index: 1000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s;
+        }
+        .modal.visible { opacity: 1; pointer-events: all; }
+        .modal-paper {
+            width: 80vw; max-width: 900px; height: 85vh;
+            background-color: var(--bg-parchment);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); border-radius: 5px;
+            padding: 70px; box-sizing: border-box; color: var(--text-color);
+            position: relative; transform: scale(0.8); transition: transform 0.5s;
+        }
+        .modal.visible .modal-paper { transform: scale(1); }
+        .modal-close-btn {
+            position: absolute; top: 20px; right: 20px; font-size: 30px;
+            cursor: pointer; color: var(--accent-color); z-index: 10;
+        }
+
+        /* Styling Buku Utama */
+        #page-content { 
+            height: calc(100% - 40px); overflow-y: auto; 
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        #page-content.fade-out-left { opacity: 0; transform: translateX(-30px); }
+        #page-content.fade-out-right { opacity: 0; transform: translateX(30px); }
+        #page-content h2 { color: var(--header-color); font-family: 'Roboto Slab'; border-bottom: 1px solid var(--accent-color); padding-bottom: 10px; margin-top:0; }
+        #page-content p, #page-content li { font-size: 19px; line-height: 1.8; margin-bottom: 1em; }
+        #page-content ul, #page-content ol { padding-left: 30px; }
+        .drop-cap::first-letter {
+            font-family: 'Roboto Slab', serif;
+            color: var(--header-color);
+            font-size: 4em; float: left;
+            line-height: 0.8; margin-right: 8px; margin-top: 8px;
+        }
+        
+        .book-nav {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 50px; height: 50px; background: rgba(0,0,0,0.1);
+            border-radius: 50%; cursor: pointer; display: flex;
+            justify-content: center; align-items: center; font-size: 30px;
+            color: var(--text-color); transition: all 0.2s; z-index: 10;
+        }
+        .book-nav:hover { background: rgba(0,0,0,0.2); }
+        .book-nav.disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+        #prev-page { left: -80px; }
+        #next-page { right: -80px; }
+        #page-indicator {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            font-size: 16px; color: var(--accent-color);
+        }
+
+        /* Styling Kuis */
+        #quiz-container { text-align: center; }
+        #quiz-question-area { display: block; }
+        #quiz-progress { font-size: 16px; color: var(--accent-color); margin-bottom: 15px;}
+        #quiz-question { font-size: 1.5em; margin-bottom: 30px; }
+        #quiz-options { list-style: none; padding: 0; margin: 0; }
+        #quiz-options li {
+            background: rgba(0,0,0,0.05); border: 2px solid var(--accent-color);
+            padding: 15px; margin-bottom: 15px; border-radius: 10px;
+            cursor: pointer; transition: all 0.2s; font-size: 18px;
+        }
+        #quiz-options li:hover { background: rgba(0,0,0,0.1); }
+        #quiz-options.answered li { pointer-events: none; }
+        #quiz-options li.correct { background-color: var(--correct-color); border-color: var(--correct-color); color: white; }
+        #quiz-options li.incorrect { background-color: var(--incorrect-color); border-color: var(--incorrect-color); color: white; }
+        #score-screen { display: none; text-align: center; }
+        #score-screen h2 { font-size: 3em; }
+        #score-text { font-size: 1.5em; }
+        #retry-quiz-btn {
+            margin-top: 30px; padding: 15px 30px; font-size: 18px;
+            background: var(--header-color); color: white;
+            border: none; border-radius: 10px; cursor: pointer;
+        }
+
+        /* Styling Glosarium */
+        #glossary-content { height: 100%; overflow-y: auto; }
+        #glossary-content dl dt { font-family: 'Roboto Slab'; font-size: 1.2em; color: var(--header-color); margin-top: 1.5em; }
+        #glossary-content dl dd { margin-left: 0; padding-left: 1.5em; border-left: 3px solid var(--accent-color); }
+    </style>
+</head>
+<body>
+
+    <div id="study-background"></div>
+    <div id="desk"></div>
+    
+    <div id="glossary-object" class="desk-object">
+        <h3>Glosarium</h3>
+    </div>
+    <div id="main-book-cover" class="desk-object">
+        <h2>Imperatif Manajemen Teknologi di Era Kontemporer</h2>
+        <p>Klik untuk Membaca</p>
+    </div>
+    <div id="quiz-object" class="desk-object">
+        <h3>KUIS</h3>
+        <p>Uji Pemahaman Anda</p>
+    </div>
+
+    <!-- Modal Buku Utama -->
+    <div id="book-modal" class="modal">
+        <div id="book-paper" class="modal-paper">
+            <span id="close-book-btn" class="modal-close-btn">&times;</span>
+            <div id="page-content"></div>
+            <div id="prev-page" class="book-nav">‹</div>
+            <div id="next-page" class="book-nav">›</div>
+            <div id="page-indicator"></div>
+        </div>
+    </div>
+
+    <!-- Modal Kuis -->
+    <div id="quiz-modal" class="modal">
+        <div id="quiz-paper" class="modal-paper">
+            <span id="close-quiz-btn" class="modal-close-btn">&times;</span>
+            <div id="quiz-container">
+                <div id="quiz-question-area">
+                    <p id="quiz-progress"></p>
+                    <h2 id="quiz-question"></h2>
+                    <ul id="quiz-options"></ul>
+                </div>
+                <div id="score-screen">
+                    <h2>Kuis Selesai!</h2>
+                    <p id="score-text"></p>
+                    <button id="retry-quiz-btn">Coba Lagi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Glosarium -->
+    <div id="glossary-modal" class="modal">
+        <div id="glossary-paper" class="modal-paper">
+            <span id="close-glossary-btn" class="modal-close-btn">&times;</span>
+            <div id="glossary-content">
+                <h2>Glosarium Istilah</h2>
+                <dl>
+                    <dt>Disrupsi Digital</dt>
+                    <dd>Perubahan fundamental pada model bisnis dan pasar yang disebabkan oleh teknologi digital baru seperti AI, IoT, atau blockchain.</dd>
+                    <dt>Keunggulan Kompetitif</dt>
+                    <dd>Kondisi atau atribut yang memungkinkan sebuah organisasi untuk berkinerja lebih baik dari para pesaingnya. Di era modern, ini seringkali berbasis teknologi.</dd>
+                    <dt>Omnichannel</dt>
+                    <dd>Pendekatan penjualan dan layanan pelanggan yang terintegrasi, di mana pengalaman pelanggan terasa mulus di berbagai kanal (online, toko fisik, aplikasi mobile, dll.).</dd>
+                    <dt>Agilitas</dt>
+                    <dd>Kemampuan organisasi untuk merespons perubahan pasar atau lingkungan bisnis dengan cepat dan efisien.</dd>
+                     <dt>Resiliensi</dt>
+                    <dd>Kemampuan sebuah organisasi untuk bertahan, beradaptasi, dan tumbuh dalam menghadapi perubahan dan tantangan yang signifikan.</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ==========================================
+    // DATA KONTEN
+    // ==========================================
+    const bookPages = [
+        `<h2>Keharusan di Era Kontemporer</h2>
+         <p class="drop-cap">Lanskap bisnis kontemporer didefinisikan oleh akselerasi perubahan teknologi, disrupsi digital, dan interkonektivitas global yang belum pernah terjadi sebelumnya. Dalam konteks yang dinamis dan sarat ketidakpastian ini, kapabilitas sebuah organisasi untuk mengelola teknologi secara efektif telah bertransformasi dari sekadar pilihan strategis menjadi sebuah keharusan mutlak untuk keberlanjutan dan pertumbuhan.</p>
+         <p>Urgensi Manajemen Teknologi di era ini tidak dapat lagi direduksi menjadi fungsi pendukung, melainkan telah menjadi inti dari strategi korporat.</p>`,
+        `<h2>Intensitas Persaingan Global</h2>
+         <p>Intensitas persaingan global, yang difasilitasi oleh kemajuan teknologi informasi dan komunikasi, menuntut tingkat agilitas dan efisiensi yang tinggi. Perusahaan tidak lagi hanya bersaing dengan entitas lokal, tetapi berhadapan langsung dengan pemain global di arena yang sama.</p>
+         <p>Dalam lingkungan hiperkompetitif ini, teknologi berfungsi sebagai instrumen persaingan yang fundamental. Manajemen Teknologi yang efektif memungkinkan perusahaan mengadopsi teknologi yang tepat untuk meningkatkan efisiensi rantai pasok, melakukan diferensiasi produk, dan merespons dinamika pasar global secara cepat.</p>`,
+        `<h2>Sumber Keunggulan Kompetitif Baru</h2>
+         <p>Jika pada era sebelumnya keunggulan kompetitif banyak bersumber dari aset fisik atau skala ekonomi, maka di era modern, teknologi telah mengambil alih peran sebagai sumber utama keunggulan kompetitif yang berkelanjutan.</p>
+         <p>Perusahaan yang mampu mengeksploitasi teknologi untuk inovasi produk, optimalisasi proses, personalisasi layanan, atau analisis data prediktif, akan memiliki posisi pasar yang superior. Manajemen Teknologi memainkan peran krusial dalam proses identifikasi, pengembangan, dan proteksi terhadap keunggulan kompetitif yang berbasis pada aset teknologi dan intelektual ini.</p>`,
+        `<h2>Tekanan Produktivitas & Efisiensi</h2>
+         <p>Tekanan untuk peningkatan produktivitas dan efisiensi operasional menjadi sebuah realitas konstan. Teknologi menawarkan serangkaian solusi, mulai dari otomatisasi proses hingga implementasi platform digital.</p>
+         <p>Manajemen Teknologi memastikan bahwa investasi pada solusi tersebut tidak hanya menjadi pengeluaran teknis, tetapi secara nyata diterjemahkan menjadi peningkatan produktivitas yang terukur dan berkelanjutan.</p>`,
+        `<h2>Menavigasi Disrupsi Digital</h2>
+         <p>Era ini juga dicirikan oleh fenomena disrupsi digital. Teknologi baru seperti kecerdasan buatan (AI), Internet of Things (IoT), dan blockchain tidak hanya memperbaiki proses yang ada, tetapi berpotensi mentransformasi model bisnis secara fundamental.</p>
+         <p>Organisasi yang gagal beradaptasi berisiko mengalami keusangan. Dalam hal ini, Manajemen Teknologi berfungsi sebagai instrumen navigasi strategis yang membantu pimpinan mengidentifikasi ancaman disrupsi, sekaligus memanfaatkan peluang yang muncul dari gelombang teknologi baru tersebut.</p>`,
+        `<h2>Evolusi Ekspektasi Pelanggan</h2>
+         <p>Di sisi pasar, ekspektasi pelanggan kontemporer telah berevolusi secara signifikan. Mereka menuntut pengalaman yang personal, mulus di berbagai kanal (omnichannel), dan responsif. Teknologi adalah kunci untuk pemenuhan ekspektasi ini.</p>
+         <p>Manajemen Teknologi yang efektif memandu organisasi dalam menerapkan arsitektur teknologi yang tepat untuk membangun pengalaman pelanggan yang unggul, yang pada akhirnya mendorong loyalitas.</p>`,
+        `<h2>Manajemen Risiko Teknologi</h2>
+         <p>Namun, adopsi teknologi yang masif juga diiringi oleh spektrum risiko yang baru dan kompleks. Ancaman keamanan siber, risiko kegagalan sistem yang dapat melumpuhkan operasi, dan ketidakpastian pengembalian investasi (ROI) adalah beberapa tantangan utama.</p>
+         <p>Manajemen Teknologi yang komprehensif secara inheren mencakup fungsi manajemen risiko, yang bertugas untuk mengidentifikasi, menilai, dan memitigasi berbagai risiko yang melekat pada aset dan operasional teknologi.</p>`,
+        `<h2>Relevansi Universal (Termasuk UMKM)</h2>
+         <p>Pada akhirnya, urgensi ini relevan bagi semua skala bisnis. Usaha Mikro, Kecil, dan Menengah (UMKM), meskipun dengan sumber daya terbatas, dapat memanfaatkan teknologi digital yang terjangkau untuk memperluas jangkauan pasar, meningkatkan efisiensi, dan bersaing secara lebih efektif.</p>
+         <p>Manajemen Teknologi yang disesuaikan dengan konteks dan skala UMKM menjadi faktor penentu bagi transformasi dan pertumbuhan mereka.</p>`,
+        `<h2>Konklusi</h2>
+         <p>Sebagai kesimpulan, dalam ekonomi yang digerakkan oleh teknologi, Manajemen Teknologi bukan lagi sekadar fungsi operasional, melainkan telah menyatu dengan fungsi strategis inti.</p>
+         <p>Organisasi yang gagal mengenali dan bertindak atas urgensi ini menghadapi risiko kehilangan daya saing, tertinggal dalam inovasi, dan pada akhirnya, kehilangan relevansi di pasar. Sebaliknya, organisasi yang proaktif dan strategis dalam mengelola teknologinya akan memiliki fondasi esensial untuk resiliensi, inovasi, dan keberhasilan jangka panjang.</p>`
+    ];
+
+    const quizData = [
+        { question: "Menurut materi, apa yang telah menjadi sumber utama keunggulan kompetitif di era modern?", options: ["Aset fisik", "Skala ekonomi", "Teknologi", "Lokasi geografis"], answer: 2 },
+        { question: "Fenomena di mana teknologi baru seperti AI dan IoT dapat mengubah model bisnis secara fundamental disebut...", options: ["Peningkatan Produktivitas", "Persaingan Global", "Disrupsi Digital", "Manajemen Risiko"], answer: 2 },
+        { question: "Pendekatan layanan pelanggan yang mulus di berbagai kanal (online, offline, mobile) dikenal sebagai...", options: ["Multichannel", "Omnichannel", "Digital Channel", "Customer Service 2.0"], answer: 1 },
+        { question: "Mengidentifikasi, menilai, dan memitigasi ancaman keamanan siber adalah bagian dari fungsi MT dalam...", options: ["Manajemen Inovasi", "Manajemen Risiko", "Peningkatan Produktivitas", "Ekspektasi Pelanggan"], answer: 1 },
+        { question: "Apakah prinsip Manajemen Teknologi hanya relevan untuk perusahaan besar berbasis teknologi?", options: ["Ya, hanya untuk perusahaan besar", "Ya, hanya untuk perusahaan teknologi", "Tidak, relevan untuk semua skala bisnis termasuk UMKM", "Tidak, hanya relevan untuk startup"], answer: 2 }
+    ];
+
+    // Kode JavaScript Engine & Logic
+    const bookCover = document.getElementById('main-book-cover');
+    const quizObject = document.getElementById('quiz-object');
+    const glossaryObject = document.getElementById('glossary-object');
+    const bookModal = document.getElementById('book-modal');
+    const quizModal = document.getElementById('quiz-modal');
+    const glossaryModal = document.getElementById('glossary-modal');
+    const closeBookBtn = document.getElementById('close-book-btn');
+    const closeQuizBtn = document.getElementById('close-quiz-btn');
+    const closeGlossaryBtn = document.getElementById('close-glossary-btn');
+    const pageContent = document.getElementById('page-content');
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    const pageIndicator = document.getElementById('page-indicator');
+    const quizQuestionArea = document.getElementById('quiz-question-area');
+    const quizProgress = document.getElementById('quiz-progress');
+    const quizQuestionEl = document.getElementById('quiz-question');
+    const quizOptionsEl = document.getElementById('quiz-options');
+    const scoreScreen = document.getElementById('score-screen');
+    const scoreText = document.getElementById('score-text');
+    const retryQuizBtn = document.getElementById('retry-quiz-btn');
+
+    let currentPageIndex = 0;
+    let isPageAnimating = false;
+    let currentQuizIndex = 0;
+    let score = 0;
+
+    function showPage(index, direction) {
+        if (index < 0 || index >= bookPages.length || isPageAnimating) return;
+        isPageAnimating = true;
+        const fadeOutClass = (direction === 'next') ? 'fade-out-left' : 'fade-out-right';
+        pageContent.classList.add(fadeOutClass);
+        setTimeout(() => {
+            currentPageIndex = index;
+            pageContent.innerHTML = bookPages[currentPageIndex];
+            pageIndicator.textContent = `Halaman ${currentPageIndex + 1} dari ${bookPages.length}`;
+            pageContent.scrollTop = 0;
+            prevPageBtn.classList.toggle('disabled', currentPageIndex === 0);
+            nextPageBtn.classList.toggle('disabled', currentPageIndex === bookPages.length - 1);
+            pageContent.classList.remove('fade-out-left', 'fade-out-right');
+            isPageAnimating = false;
+        }, 300);
+    }
+    function openBook() {
+        bookModal.classList.add('visible');
+        currentPageIndex = -1;
+        showPage(0, 'next');
+    }
+    function closeBook() { bookModal.classList.remove('visible'); }
+
+    function startQuiz() {
+        currentQuizIndex = 0;
+        score = 0;
+        quizModal.classList.add('visible');
+        scoreScreen.style.display = 'none';
+        quizQuestionArea.style.display = 'block';
+        showQuizQuestion();
+    }
+    function showQuizQuestion() {
+        const questionData = quizData[currentQuizIndex];
+        quizProgress.textContent = `Soal ${currentQuizIndex + 1} dari ${quizData.length}`;
+        quizQuestionEl.textContent = questionData.question;
+        quizOptionsEl.innerHTML = '';
+        quizOptionsEl.classList.remove('answered');
+        questionData.options.forEach((option, index) => {
+            const li = document.createElement('li');
+            li.textContent = option;
+            li.dataset.index = index;
+            quizOptionsEl.appendChild(li);
+        });
+    }
+    function handleAnswer(e) {
+        if (e.target.tagName !== 'LI' || quizOptionsEl.classList.contains('answered')) return;
+        quizOptionsEl.classList.add('answered');
+        const selectedIndex = parseInt(e.target.dataset.index);
+        const correctIndex = quizData[currentQuizIndex].answer;
+        if (selectedIndex === correctIndex) {
+            score++;
+            e.target.classList.add('correct');
+        } else {
+            e.target.classList.add('incorrect');
+            quizOptionsEl.children[correctIndex].classList.add('correct');
+        }
+        setTimeout(() => {
+            currentQuizIndex++;
+            if (currentQuizIndex < quizData.length) {
+                showQuizQuestion();
+            } else {
+                showFinalScore();
+            }
+        }, 1500);
+    }
+    function showFinalScore() {
+        quizQuestionArea.style.display = 'none';
+        scoreScreen.style.display = 'block';
+        scoreText.innerHTML = `Anda menjawab benar <strong>${score}</strong> dari <strong>${quizData.length}</strong> soal.`;
+    }
+    function closeQuiz() { quizModal.classList.remove('visible'); }
+
+    function openGlossary() { glossaryModal.classList.add('visible'); }
+    function closeGlossary() { glossaryModal.classList.remove('visible'); }
+
+    bookCover.addEventListener('click', openBook);
+    closeBookBtn.addEventListener('click', closeBook);
+    prevPageBtn.addEventListener('click', () => showPage(currentPageIndex - 1, 'prev'));
+    nextPageBtn.addEventListener('click', () => showPage(currentPageIndex + 1, 'next'));
+    quizObject.addEventListener('click', startQuiz);
+    closeQuizBtn.addEventListener('click', closeQuiz);
+    quizOptionsEl.addEventListener('click', handleAnswer);
+    retryQuizBtn.addEventListener('click', startQuiz);
+    glossaryObject.addEventListener('click', openGlossary);
+    closeGlossaryBtn.addEventListener('click', closeGlossary);
+    
+    window.addEventListener('keydown', (e) => {
+        const anyModalVisible = bookModal.classList.contains('visible') || quizModal.classList.contains('visible') || glossaryModal.classList.contains('visible');
+        if (e.key === 'Escape' && anyModalVisible) {
+            closeBook();
+            closeQuiz();
+            closeGlossary();
+        }
+        if (bookModal.classList.contains('visible')) {
+            if (e.key === 'ArrowRight') nextPageBtn.click();
+            if (e.key === 'ArrowLeft') prevPageBtn.click();
+        }
+    });
+
+});
+</script>
+</body>
+</html>

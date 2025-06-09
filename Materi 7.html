@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Teknologi: Lintasan Evolusi Teknologi</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Roboto+Slab:wght@400;700&display=swap');
+
+        :root {
+            --bg-parchment: #fdf6e3;
+            --text-color: #3d2c1d;
+            --header-color: #5d4037;
+            --accent-color: #a1887f;
+            --correct-color: #27ae60;
+            --incorrect-color: #c0392b;
+            --wood-texture-url: 'https://www.transparenttextures.com/patterns/wood-pattern.png';
+            --desk-color: #6d4c41;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Merriweather', serif;
+        }
+        
+        #study-background {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1511920170033-f83297292737?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1887&q=80');
+            background-size: cover;
+            background-position: center;
+            filter: blur(5px) brightness(0.7);
+            transform: scale(1.1);
+        }
+
+        #desk {
+            position: fixed;
+            bottom: 0; left: 0;
+            width: 100%;
+            height: 30vh;
+            background-color: var(--desk-color);
+            background-image: url(var(--wood-texture-url));
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+            transform: perspective(1000px) rotateX(20deg);
+            transform-origin: top center;
+        }
+
+        .desk-object {
+            position: absolute;
+            bottom: 10vh;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+        .desk-object:hover {
+            transform: translateY(-20px) scale(1.05);
+        }
+
+        /* Objek-objek di Meja */
+        #main-book-cover {
+            left: 50%;
+            transform: translateX(-50%) rotate(-5deg);
+            width: 250px; height: 350px;
+            background-color: #4a2c2a;
+            border-radius: 8px;
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: #e0dcd1; text-align: center; padding: 20px;
+        }
+        #main-book-cover h2 { font-family: 'Roboto Slab', serif; margin: 0; font-size: 24px; line-height: 1.3; }
+        #main-book-cover p { font-size: 14px; margin-top: 10px; color: #c5b8a5; }
+
+        #quiz-object {
+            right: 25%;
+            transform: rotate(10deg);
+            width: 200px; height: 280px;
+            background-color: #faf3e0;
+            border-radius: 5px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            padding: 20px; text-align: center; color: #5d4037;
+        }
+         #quiz-object h3 { font-family: 'Roboto Slab', serif; margin: 0; border-bottom: 2px solid var(--accent-color); padding-bottom: 5px;}
+         #quiz-object p { font-size: 14px; margin-top: 10px; font-style: italic; }
+
+        #glossary-object {
+            left: 25%;
+            transform: rotate(-8deg);
+            width: 180px; height: 130px;
+            background: #607d8b; color: white;
+            border-radius: 5px; box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            padding: 15px; text-align: center;
+        }
+        #glossary-object h3 { font-family: 'Roboto Slab'; margin:0; font-size: 18px; color: white; }
+
+        /* Modal Generik */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+            z-index: 1000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s;
+        }
+        .modal.visible { opacity: 1; pointer-events: all; }
+        .modal-paper {
+            width: 80vw; max-width: 900px; height: 85vh;
+            background-color: var(--bg-parchment);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); border-radius: 5px;
+            padding: 70px; box-sizing: border-box; color: var(--text-color);
+            position: relative; transform: scale(0.8); transition: transform 0.5s;
+        }
+        .modal.visible .modal-paper { transform: scale(1); }
+        .modal-close-btn {
+            position: absolute; top: 20px; right: 20px; font-size: 30px;
+            cursor: pointer; color: var(--accent-color); z-index: 10;
+        }
+
+        /* Styling Buku Utama */
+        #page-content { 
+            height: calc(100% - 40px); overflow-y: auto; 
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        #page-content.fade-out-left { opacity: 0; transform: translateX(-30px); }
+        #page-content.fade-out-right { opacity: 0; transform: translateX(30px); }
+        #page-content h2 { color: var(--header-color); font-family: 'Roboto Slab'; border-bottom: 1px solid var(--accent-color); padding-bottom: 10px; margin-top:0; }
+        #page-content p, #page-content li { font-size: 19px; line-height: 1.8; margin-bottom: 1em; }
+        #page-content ul, #page-content ol { padding-left: 30px; }
+        .drop-cap::first-letter {
+            font-family: 'Roboto Slab', serif;
+            color: var(--header-color);
+            font-size: 4em; float: left;
+            line-height: 0.8; margin-right: 8px; margin-top: 8px;
+        }
+        
+        .book-nav {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 50px; height: 50px; background: rgba(0,0,0,0.1);
+            border-radius: 50%; cursor: pointer; display: flex;
+            justify-content: center; align-items: center; font-size: 30px;
+            color: var(--text-color); transition: all 0.2s; z-index: 10;
+        }
+        .book-nav:hover { background: rgba(0,0,0,0.2); }
+        .book-nav.disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+        #prev-page { left: -80px; }
+        #next-page { right: -80px; }
+        #page-indicator {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            font-size: 16px; color: var(--accent-color);
+        }
+
+        /* Styling Kuis */
+        #quiz-container { text-align: center; }
+        #quiz-question-area { display: block; }
+        #quiz-progress { font-size: 16px; color: var(--accent-color); margin-bottom: 15px;}
+        #quiz-question { font-size: 1.5em; margin-bottom: 30px; }
+        #quiz-options { list-style: none; padding: 0; margin: 0; }
+        #quiz-options li {
+            background: rgba(0,0,0,0.05); border: 2px solid var(--accent-color);
+            padding: 15px; margin-bottom: 15px; border-radius: 10px;
+            cursor: pointer; transition: all 0.2s; font-size: 18px;
+        }
+        #quiz-options li:hover { background: rgba(0,0,0,0.1); }
+        #quiz-options.answered li { pointer-events: none; }
+        #quiz-options li.correct { background-color: var(--correct-color); border-color: var(--correct-color); color: white; }
+        #quiz-options li.incorrect { background-color: var(--incorrect-color); border-color: var(--incorrect-color); color: white; }
+        #score-screen { display: none; text-align: center; }
+        #score-screen h2 { font-size: 3em; }
+        #score-text { font-size: 1.5em; }
+        #retry-quiz-btn {
+            margin-top: 30px; padding: 15px 30px; font-size: 18px;
+            background: var(--header-color); color: white;
+            border: none; border-radius: 10px; cursor: pointer;
+        }
+
+        /* Styling Glosarium */
+        #glossary-content { height: 100%; overflow-y: auto; }
+        #glossary-content dl dt { font-family: 'Roboto Slab'; font-size: 1.2em; color: var(--header-color); margin-top: 1.5em; }
+        #glossary-content dl dd { margin-left: 0; padding-left: 1.5em; border-left: 3px solid var(--accent-color); }
+    </style>
+</head>
+<body>
+
+    <div id="study-background"></div>
+    <div id="desk"></div>
+    
+    <div id="glossary-object" class="desk-object">
+        <h3>Glosarium</h3>
+    </div>
+    <div id="main-book-cover" class="desk-object">
+        <h2>Lintasan Evolusi Teknologi dan Implikasinya</h2>
+        <p>Klik untuk Membaca</p>
+    </div>
+    <div id="quiz-object" class="desk-object">
+        <h3>KUIS</h3>
+        <p>Uji Pemahaman Anda</p>
+    </div>
+
+    <!-- Modal Buku Utama -->
+    <div id="book-modal" class="modal">
+        <div id="book-paper" class="modal-paper">
+            <span id="close-book-btn" class="modal-close-btn">&times;</span>
+            <div id="page-content"></div>
+            <div id="prev-page" class="book-nav">‹</div>
+            <div id="next-page" class="book-nav">›</div>
+            <div id="page-indicator"></div>
+        </div>
+    </div>
+
+    <!-- Modal Kuis -->
+    <div id="quiz-modal" class="modal">
+        <div id="quiz-paper" class="modal-paper">
+            <span id="close-quiz-btn" class="modal-close-btn">&times;</span>
+            <div id="quiz-container">
+                <div id="quiz-question-area">
+                    <p id="quiz-progress"></p>
+                    <h2 id="quiz-question"></h2>
+                    <ul id="quiz-options"></ul>
+                </div>
+                <div id="score-screen">
+                    <h2>Kuis Selesai!</h2>
+                    <p id="score-text"></p>
+                    <button id="retry-quiz-btn">Coba Lagi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Glosarium -->
+    <div id="glossary-modal" class="modal">
+        <div id="glossary-paper" class="modal-paper">
+            <span id="close-glossary-btn" class="modal-close-btn">&times;</span>
+            <div id="glossary-content">
+                <h2>Glosarium Istilah</h2>
+                <dl>
+                    <dt>Revolusi Industri</dt>
+                    <dd>Perubahan fundamental paradigma ekonomi dari berbasis agraria menjadi manufaktur, dipicu oleh inovasi seperti mesin uap.</dd>
+                    <dt>Hukum Moore (Moore's Law)</dt>
+                    <dd>Prediksi bahwa jumlah transistor pada sirkuit terpadu akan berlipat ganda kira-kira setiap dua tahun, menghasilkan peningkatan kinerja komputasi secara eksponensial.</dd>
+                    <dt>Pervasive</dt>
+                    <dd>Menyebar atau meresap ke segala aspek atau bagian dari sesuatu. Dalam konteks ini, dampak internet meresap ke semua fungsi bisnis.</dd>
+                    <dt>Konvergensi Teknologi</dt>
+                    <dd>Fenomena di mana berbagai teknologi yang sebelumnya terpisah bergabung untuk menciptakan fungsionalitas dan kapabilitas baru (misalnya, AI, IoT, dan Big Data bekerja bersama).</dd>
+                    <dt>Disintermediasi</dt>
+                    <dd>Proses penghilangan perantara tradisional dalam rantai nilai, seringkali difasilitasi oleh teknologi (misalnya, e-commerce menghilangkan peran distributor tradisional).</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ==========================================
+    // DATA KONTEN
+    // ==========================================
+    const bookPages = [
+        `<h2>Pengantar Evolusi Teknologi</h2>
+         <p class="drop-cap">Evolusi teknologi merupakan proses berkelanjutan yang secara fundamental telah membentuk peradaban manusia dan struktur ekonomi global. Setiap gelombang inovasi teknologi, dari penemuan paling dasar hingga era digital, telah berfungsi sebagai kekuatan disruptif yang merekonfigurasi lanskap industri.</p>
+         <p>Memahami lintasan historis ini esensial untuk mengapresiasi dampak teknologi kontemporer dan mengantisipasi dinamika perubahan di masa depan.</p>`,
+        `<h2>Gelombang 1: Revolusi Industri</h2>
+         <p>Titik balik historis yang paling signifikan adalah Revolusi Industri pertama yang dimulai pada abad ke-18. Inovasi seperti mesin uap dan mekanisasi produksi secara fundamental mengubah paradigma ekonomi dari berbasis agraria menjadi berbasis manufaktur.</p>
+         <p>Ini memicu produksi massal, mendorong urbanisasi, dan melahirkan model bisnis serta struktur organisasi yang sepenuhnya baru, meletakkan fondasi bagi era industri modern.</p>`,
+        `<h2>Gelombang 2: Elektrifikasi & Produksi Massal</h2>
+         <p>Fase selanjutnya, pada akhir abad ke-19 dan awal abad ke-20, ditandai oleh elektrifikasi dan penyempurnaan sistem produksi massal, yang dipelopori oleh konsep lini perakitan.</p>
+         <p>Listrik tidak hanya menjadi sumber tenaga yang lebih efisien bagi pabrik, tetapi juga memungkinkan lahirnya berbagai industri baru di sektor barang konsumsi dan peralatan. Efisiensi produksi yang meningkat secara dramatis menurunkan biaya dan memperluas akses pasar secara masif.</p>`,
+        `<h2>Gelombang 3: Revolusi Digital</h2>
+         <p>Pertengahan abad ke-20 menjadi saksi lahirnya revolusi digital, yang dipicu oleh penemuan transistor dan sirkuit terpadu. Ini memungkinkan pengembangan komputer, yang pada awalnya terbatas pada institusi besar.</p>
+         <p>Namun, seiring berjalannya waktu, kinerja komputasi yang meningkat secara eksponensial, sebagaimana diprediksikan oleh Hukum Moore, disertai dengan miniaturisasi dan penurunan biaya, telah memungkinkan adopsi komputer secara luas di ranah bisnis dan personal.</p>`,
+        `<h2>Gelombang 4: Internet & World Wide Web</h2>
+         <p>Gelombang transformatif berikutnya adalah kemunculan internet dan WWW. Teknologi ini secara radikal meruntuhkan friksi geografis dan informasi, memfasilitasi komunikasi global secara instan, dan berfungsi sebagai fondasi bagi model bisnis baru seperti e-commerce dan ekonomi digital.</p>
+         <p>Dampak internet bersifat pervasive, merestrukturisasi hampir semua fungsi bisnis, mulai dari pemasaran, layanan pelanggan, hingga manajemen rantai pasok global.</p>`,
+        `<h2>Gelombang 5: Konvergensi Teknologi</h2>
+         <p>Saat ini, kita berada di tengah gelombang evolusi yang didorong oleh konvergensi teknologi transformasional.</p>
+         <ul>
+            <li><strong>Kecerdasan Buatan (AI):</strong> Memungkinkan sistem untuk belajar dan beroperasi secara otonom.</li>
+            <li><strong>Internet of Things (IoT):</strong> Menghubungkan miliaran perangkat fisik, menghasilkan aliran data masif.</li>
+            <li><strong>Big Data Analytics:</strong> Menyediakan kapabilitas untuk mengekstrak wawasan strategis.</li>
+            <li><strong>Cloud Computing:</strong> Menyediakan infrastruktur yang skalabel dan fleksibel.</li>
+         </ul>`,
+        `<h2>Implikasi pada Struktur Industri</h2>
+         <p>Secara kumulatif, setiap gelombang evolusi ini tidak hanya memperkenalkan perangkat baru, tetapi juga secara konsisten merestrukturisasi industri. Mekanisasi menggeser dominasi pertanian, komputerisasi mengubah cara kerja kantoran, dan internet menantang model bisnis tradisional di sektor media, ritel, dan hiburan.</p>
+         <p>Fenomena disintermediasi, di mana perantara tradisional dihilangkan dari rantai nilai, menjadi tren yang umum.</p>`,
+        `<h2>Implikasi pada Tenaga Kerja</h2>
+         <p>Implikasi signifikan lainnya adalah terhadap kapabilitas tenaga kerja. Sementara otomatisasi dapat menggantikan beberapa jenis pekerjaan, evolusi teknologi juga menciptakan peran-peran baru yang menuntut keahlian di bidang analisis data, rekayasa perangkat lunak, dan manajemen sistem siber-fisik.</p>
+         <p>Pendidikan dan pembelajaran berkelanjutan menjadi imperatif strategis bagi individu dan organisasi untuk tetap relevan.</p>`,
+        `<h2>Siklus yang Terus Berakselerasi</h2>
+         <p>Penting untuk dipahami bahwa siklus evolusi ini terus berlanjut dan bahkan menunjukkan tanda-tanda akselerasi. Jeda waktu antara gelombang inovasi besar semakin memendek.</p>
+         <p>Bagi para manajer teknologi, ini menyajikan tantangan sekaligus peluang. Kapabilitas untuk memahami lintasan evolusi ini, mengantisipasi dampak teknologi baru, dan secara proaktif mengelola adaptasi organisasi akan menjadi determinan utama keberhasilan di masa depan.</p>`
+    ];
+
+    const quizData = [
+        { question: "Inovasi seperti mesin uap dan mekanisasi adalah ciri khas dari...", options: ["Revolusi Digital", "Era Internet", "Revolusi Industri", "Era Konvergensi"], answer: 2 },
+        { question: "Prediksi bahwa kinerja komputasi akan berlipat ganda setiap dua tahun dikenal sebagai...", options: ["Hukum Newton", "Teori Relativitas", "Prinsip Pareto", "Hukum Moore"], answer: 3 },
+        { question: "Teknologi apa yang secara radikal meruntuhkan friksi geografis dan informasi?", options: ["Elektrifikasi", "Lini Perakitan", "Internet dan WWW", "Komputer Mainframe"], answer: 2 },
+        { question: "Fenomena di mana perantara tradisional dihilangkan dari rantai nilai disebut...", options: ["Konvergensi", "Disintermediasi", "Urbanisasi", "Otomatisasi"], answer: 1 },
+        { question: "Menurut materi, apa implikasi utama dari evolusi teknologi terhadap tenaga kerja?", options: ["Semua pekerjaan akan hilang", "Tidak ada perubahan signifikan", "Terciptanya peran baru yang menuntut keahlian baru", "Penurunan gaji secara umum"], answer: 2 }
+    ];
+
+    // Kode JavaScript Engine & Logic (tetap sama, tidak perlu diubah)
+    const bookCover = document.getElementById('main-book-cover');
+    const quizObject = document.getElementById('quiz-object');
+    const glossaryObject = document.getElementById('glossary-object');
+    const bookModal = document.getElementById('book-modal');
+    const quizModal = document.getElementById('quiz-modal');
+    const glossaryModal = document.getElementById('glossary-modal');
+    const closeBookBtn = document.getElementById('close-book-btn');
+    const closeQuizBtn = document.getElementById('close-quiz-btn');
+    const closeGlossaryBtn = document.getElementById('close-glossary-btn');
+    const pageContent = document.getElementById('page-content');
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    const pageIndicator = document.getElementById('page-indicator');
+    const quizQuestionArea = document.getElementById('quiz-question-area');
+    const quizProgress = document.getElementById('quiz-progress');
+    const quizQuestionEl = document.getElementById('quiz-question');
+    const quizOptionsEl = document.getElementById('quiz-options');
+    const scoreScreen = document.getElementById('score-screen');
+    const scoreText = document.getElementById('score-text');
+    const retryQuizBtn = document.getElementById('retry-quiz-btn');
+
+    let currentPageIndex = 0;
+    let isPageAnimating = false;
+    let currentQuizIndex = 0;
+    let score = 0;
+
+    function showPage(index, direction) {
+        if (index < 0 || index >= bookPages.length || isPageAnimating) return;
+        isPageAnimating = true;
+        const fadeOutClass = (direction === 'next') ? 'fade-out-left' : 'fade-out-right';
+        pageContent.classList.add(fadeOutClass);
+        setTimeout(() => {
+            currentPageIndex = index;
+            pageContent.innerHTML = bookPages[currentPageIndex];
+            pageIndicator.textContent = `Halaman ${currentPageIndex + 1} dari ${bookPages.length}`;
+            pageContent.scrollTop = 0;
+            prevPageBtn.classList.toggle('disabled', currentPageIndex === 0);
+            nextPageBtn.classList.toggle('disabled', currentPageIndex === bookPages.length - 1);
+            pageContent.classList.remove('fade-out-left', 'fade-out-right');
+            isPageAnimating = false;
+        }, 300);
+    }
+    function openBook() {
+        bookModal.classList.add('visible');
+        currentPageIndex = -1;
+        showPage(0, 'next');
+    }
+    function closeBook() { bookModal.classList.remove('visible'); }
+
+    function startQuiz() {
+        currentQuizIndex = 0;
+        score = 0;
+        quizModal.classList.add('visible');
+        scoreScreen.style.display = 'none';
+        quizQuestionArea.style.display = 'block';
+        showQuizQuestion();
+    }
+    function showQuizQuestion() {
+        const questionData = quizData[currentQuizIndex];
+        quizProgress.textContent = `Soal ${currentQuizIndex + 1} dari ${quizData.length}`;
+        quizQuestionEl.textContent = questionData.question;
+        quizOptionsEl.innerHTML = '';
+        quizOptionsEl.classList.remove('answered');
+        questionData.options.forEach((option, index) => {
+            const li = document.createElement('li');
+            li.textContent = option;
+            li.dataset.index = index;
+            quizOptionsEl.appendChild(li);
+        });
+    }
+    function handleAnswer(e) {
+        if (e.target.tagName !== 'LI' || quizOptionsEl.classList.contains('answered')) return;
+        quizOptionsEl.classList.add('answered');
+        const selectedIndex = parseInt(e.target.dataset.index);
+        const correctIndex = quizData[currentQuizIndex].answer;
+        if (selectedIndex === correctIndex) {
+            score++;
+            e.target.classList.add('correct');
+        } else {
+            e.target.classList.add('incorrect');
+            quizOptionsEl.children[correctIndex].classList.add('correct');
+        }
+        setTimeout(() => {
+            currentQuizIndex++;
+            if (currentQuizIndex < quizData.length) {
+                showQuizQuestion();
+            } else {
+                showFinalScore();
+            }
+        }, 1500);
+    }
+    function showFinalScore() {
+        quizQuestionArea.style.display = 'none';
+        scoreScreen.style.display = 'block';
+        scoreText.innerHTML = `Anda menjawab benar <strong>${score}</strong> dari <strong>${quizData.length}</strong> soal.`;
+    }
+    function closeQuiz() { quizModal.classList.remove('visible'); }
+
+    function openGlossary() { glossaryModal.classList.add('visible'); }
+    function closeGlossary() { glossaryModal.classList.remove('visible'); }
+
+    bookCover.addEventListener('click', openBook);
+    closeBookBtn.addEventListener('click', closeBook);
+    prevPageBtn.addEventListener('click', () => showPage(currentPageIndex - 1, 'prev'));
+    nextPageBtn.addEventListener('click', () => showPage(currentPageIndex + 1, 'next'));
+    quizObject.addEventListener('click', startQuiz);
+    closeQuizBtn.addEventListener('click', closeQuiz);
+    quizOptionsEl.addEventListener('click', handleAnswer);
+    retryQuizBtn.addEventListener('click', startQuiz);
+    glossaryObject.addEventListener('click', openGlossary);
+    closeGlossaryBtn.addEventListener('click', closeGlossary);
+    
+    window.addEventListener('keydown', (e) => {
+        const anyModalVisible = bookModal.classList.contains('visible') || quizModal.classList.contains('visible') || glossaryModal.classList.contains('visible');
+        if (e.key === 'Escape' && anyModalVisible) {
+            closeBook();
+            closeQuiz();
+            closeGlossary();
+        }
+        if (bookModal.classList.contains('visible')) {
+            if (e.key === 'ArrowRight') nextPageBtn.click();
+            if (e.key === 'ArrowLeft') prevPageBtn.click();
+        }
+    });
+
+});
+</script>
+</body>
+</html>
